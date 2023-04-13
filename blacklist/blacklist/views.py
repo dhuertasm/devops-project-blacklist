@@ -1,20 +1,21 @@
 from flask import Blueprint
 from flask import request
 
-from .core import (creacion_usuario,
-                   autenticar_usuario,
-                   self_information)
+from .core import adicionar_email
 
 
-usearios = Blueprint('usearios', __name__)
+blacklist = Blueprint('blacklist', __name__)
 
 
-@usearios.route("/users", methods=['POST'])
-def register_users():
-    response, status = creacion_usuario(request)
+@blacklist.route("/blacklists", methods=['POST'])
+def agregar_email():
+    response, status = adicionar_email(request)
     return response, status
 
 
+
+
+""" 
 @usearios.route("/users/auth", methods=['POST'])
 def token_user():
     response, status = autenticar_usuario(request)
@@ -30,3 +31,4 @@ def information_user():
 def root():
     return 'pong'
 
+ """
