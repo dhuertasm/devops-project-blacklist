@@ -62,7 +62,7 @@ def adicionar_email(request):
         )
         db.session.add(nuevo_usuario)
         db.session.commit()
-        return {"id": nuevo_usuario.id, "createdAt": datetime.now().isoformat()}, 201
+        #return {"id": nuevo_usuario.id, "createdAt": datetime.now().isoformat()}, 201
     except Exception as e:
         print(e)
         return {"mensaje": f"falta {e}"}, 400
