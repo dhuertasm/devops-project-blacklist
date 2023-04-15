@@ -26,7 +26,7 @@ def information_user():
     response, status = self_information(request)
     return response, status
 
-@usearios.route('/users/ping', methods=['GET'] )
+@usearios.route('/blacklists/ping', methods=['GET'] )
 def root():
     return 'pong'
 
