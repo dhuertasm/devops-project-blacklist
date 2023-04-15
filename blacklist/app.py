@@ -47,6 +47,5 @@ cors = CORS(app)
 for blueprint in ACTIVATE_ENDPOINTS:
     app.register_blueprint(blueprint=blueprint)
 
-jwt = JWTManager(app)
 
 
