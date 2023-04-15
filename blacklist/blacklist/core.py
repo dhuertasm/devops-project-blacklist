@@ -28,7 +28,10 @@ def adicionar_email(request):
    db.session.add(nuevo_registro)
    db.session.commit()
 
-   return f"El email, {email} fue agregado a la lista", 200
+   token_de_acceso = create_access_token(nuevo_registro.id)
+
+
+   return {"mensaje": f"El email, {email} fue agregado a la lista", "token": token_de_acceso}, 200
 
    
     
