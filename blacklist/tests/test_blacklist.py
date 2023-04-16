@@ -11,7 +11,8 @@ fake = Faker()
 fake.add_provider(internet)
 fake.add_provider(misc)
 
-token=fake.pystr(min_chars=16, max_chars=16)
+#token=fake.pystr(min_chars=16, max_chars=16)
+token = create_access_token('root')
 
 data = 	{
    "email": fake.email(),
@@ -19,9 +20,9 @@ data = 	{
    "blocked_reason": fake.paragraph(nb_sentences=1)
 }
 
-def test_blacklist_post_200():
+def test_blacklist_post_201():
   response = app.test_client().post('/blacklists', json=data, headers={"Authorization": f'Bearer {token}'})
-  assert response.status_code == 200
+  assert response.status_code == 201
 
 def test_blacklist_post_exist_mail_412():
   response = app.test_client().post('/blacklists', json=data, headers={"Authorization": f'Bearer {token}'})
@@ -51,7 +52,6 @@ def test_blacklist_post_uuid_412():
   assert response.status_code == 412
 
 def test_blacklist_email_get_200():
-  token = create_access_token('root')
   expected_response = True 
   response = app.test_client().get(f'/blacklists/pruebas@gmail.com', headers={"Authorization": f'Bearer {token}'})
   assert response.status_code == 200
@@ -59,7 +59,6 @@ def test_blacklist_email_get_200():
   
 
 def test_blacklist_not_email_get_200():
-  token = create_access_token('root')
   expected_response = False 
   response = app.test_client().get(f'/blacklists/${fake.email()}', headers={"Authorization": f'Bearer {token}'})
   response_info= json.loads(response.data.decode('utf-8'))

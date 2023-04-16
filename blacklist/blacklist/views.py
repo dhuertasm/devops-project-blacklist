@@ -9,6 +9,7 @@ blacklist = Blueprint('blacklist', __name__)
 
 
 @blacklist.route("/blacklists", methods=['POST'])
+@jwt_required()
 def agregar_email():
     response, status = adicionar_email(request)
     return response, status
