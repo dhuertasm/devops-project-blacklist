@@ -1,7 +1,5 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-
 
 db = SQLAlchemy()
 
@@ -12,7 +10,6 @@ class BlackList(db.Model):
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email: str = db.Column(db.String(150))
     app_uuid: str = db.Column(db.String(250))
-    blocked_reason: str = db.Column(db.String(255))
-    token: str = db.Column(db.String(500), nullable=True)
+    blocked_reason: str = db.Column(db.String(255), nullable=True)
     ip: str = db.Column(db.String(150))
     createdAt: datetime = db.Column(db.DateTime, default=datetime.datetime.now)

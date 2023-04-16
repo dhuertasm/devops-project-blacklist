@@ -12,8 +12,6 @@ def adicionar_email(request):
 
    if email is None:
       return "El campo email no se encuentra definido", 412
-   if blocked_reason is None:
-      return "El campo blocked_reson no se encuentra definido", 412
    if app_uuid is None:
       return "El campo app_uuid no se encuentra definido", 412
 
@@ -30,10 +28,7 @@ def adicionar_email(request):
    db.session.add(nuevo_registro)
    db.session.commit()
 
-   token_de_acceso = create_access_token(nuevo_registro.id)
-
-
-   return {"mensaje": f"El email, {email} fue agregado a la lista", "token": token_de_acceso}, 200
+   return f'{nuevo_registro.email}', 201
 
 def search_email(email):
    current_user = get_jwt_identity()

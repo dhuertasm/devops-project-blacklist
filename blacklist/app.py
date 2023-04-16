@@ -33,7 +33,6 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 
 jwt = JWTManager(app)
 
-
 db.init_app(app)
 
 with app.app_context():
