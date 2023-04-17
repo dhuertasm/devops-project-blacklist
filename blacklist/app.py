@@ -13,8 +13,7 @@ username = os.getenv('DB_USER', '')
 password = os.getenv('DB_PASSWORD', '')
 dbname = os.getenv('DB_NAME', '')
 hostname = os.getenv('DB_HOST', '')
-# url_posgres = f'postgresql://{username}:{password}@{hostname}:5432/{dbname}'
-url_posgres = os.getenv('DATABASE_URL', 'postgresql://postgres_admin:K38xBUh8&Xfg@moria-devops.c7qi4hgepkrl.us-east-1.rds.amazonaws.com:5432/moria_blacklists')
+url_posgres = f'postgresql://{username}:{password}@{hostname}:5432/{dbname}'
 
 application.config['SQLALCHEMY_DATABASE_URI'] = url_posgres
 application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
