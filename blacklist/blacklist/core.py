@@ -1,80 +1,48 @@
-import secrets
-import hashlib
-from datetime import timedelta, datetime
-from .models import Usuarios, db
-from flask_jwt_extended import create_access_token
+from .models import BlackList, db
+from flask import jsonify
+from flask_jwt_extended import create_access_token, get_jwt_identity
+from .models import db, BlackList
 
 
-def creacion_usuario(request):
+def adicionar_email(request):
+   
+   email = request.json.get('email')
+   blocked_reason = request.json.get('blocked_reason')
+   app_uuid = request.json.get('app_uuid')
 
-    try:
-        existe_usuario = Usuarios.query.filter(Usuarios.username == request.json["username"]).first()
-        existe_email = Usuarios.query.filter(Usuarios.email == request.json["email"]).first()
-        if existe_usuario is not None or existe_email is not None:
-            return {"mensaje": "El usuario ya existe, pruebe con otro"}, 412
-
-        salt = secrets.token_hex(8)
-        password = f"{request.json['password']}{salt}"
-
-        nuevo_usuario = Usuarios(
-            username=request.json["username"],
-            email=request.json["email"],
-            password=hashlib.sha256(password.encode()).hexdigest(),
-            salt=salt,
-        )
-        db.session.add(nuevo_usuario)
-        db.session.commit()
-        return {"id": nuevo_usuario.id, "createdAt": datetime.now().isoformat()}, 201
-    except Exception as e:
-        print(e)
-        return {"mensaje": f"falta {e}"}, 400
-
-def autenticar_usuario(request):
-    try:
-
-        usuario_auth = Usuarios.query.filter(Usuarios.username == request.json["username"]).first()
-
-        if usuario_auth is None:
-            return {"mensaje": "Usuario con username no exista o contrasena incorrecta"}, 404
-
-        password_input = f"{request.json['password']}{usuario_auth.salt}"
-        password = Usuarios.query.filter(Usuarios.username == request.json["username"],
-                                         Usuarios.password == hashlib.sha256(password_input.encode()).hexdigest()
-                                         ).first()
-
-        if password is None:
-            return {"mensaje": "Usuario con username no exista o contrasena incorrecta"}, 404
-
-        token_user = create_access_token(identity=usuario_auth.id)
-        expireAt = datetime.now() + timedelta(minutes=30)
-        usuario_auth.expireAt = expireAt
-        usuario_auth.token = token_user
-        db.session.commit()
-        return {"id": usuario_auth.id,
-                "token": token_user,
-                "expireAt": expireAt.isoformat()}, 200
-
-    except Exception as e:
-        print(e)
-        return {"mensaje": f"falta {e}"}, 400
+   if email is None:
+      return "El campo email no se encuentra definido", 412
+   if app_uuid is None:
+      return "El campo app_uuid no se encuentra definido", 412
 
 
-def self_information(request):
-    token_headers = request.headers.get('Authorization')
-    if token_headers is None:
-        return {"mensaje": "No viene token"}, 400
-
-    token_user = token_headers.split(" ")[1]
-    curren_user = Usuarios.query.filter(Usuarios.token == token_user).first()
-
-    if curren_user is None:
-        return {"mensaje": "token no válido"}, 401
-
-    if curren_user.expireAt > (datetime.now() + timedelta(minutes=30)):
-        return {"mensaje": "token expirado"}, 401
-
-    return {"id": curren_user.id,
-            "username": curren_user.username,
-            "email": curren_user.email}, 200
+   ip = request.remote_addr
 
 
+   existe_email = BlackList.query.filter(BlackList.email == email).first()
+   if existe_email:
+      return f"El email, {email} ya existe", 412
+   
+   nuevo_registro = BlackList(email=email, blocked_reason=blocked_reason, 
+                              app_uuid=app_uuid, ip=ip)
+   db.session.add(nuevo_registro)
+   db.session.commit()
+
+   return f'{nuevo_registro.email}', 201
+
+def search_email(email):
+   current_user = get_jwt_identity()
+   if current_user != 'root':
+      return jsonify({"msg": "Token invalido"}), 401
+
+   get_query=BlackList.query.filter(BlackList.email==email).first()
+   if get_query is None:
+    return jsonify({'exist': False}), 200
+   
+   response = {'exist': True, 'blocked_reason': get_query.blocked_reason}
+   return jsonify(response), 200
+
+def generate_token():
+   access_token = create_access_token('root')
+   return jsonify(access_token=access_token), 200
+   

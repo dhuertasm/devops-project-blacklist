@@ -1,3 +1,3 @@
-from .views import usearios
+from .views import blacklist
 
-__all__ = ['usearios']
+__all__ = ['blacklist']
