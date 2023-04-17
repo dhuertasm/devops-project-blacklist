@@ -1,7 +1,7 @@
-from .models import BlackList, db
+from models import BlackList, db
 from flask import jsonify
 from flask_jwt_extended import create_access_token, get_jwt_identity
-from .models import db, BlackList
+from models import db, BlackList
 
 
 def adicionar_email(request):

@@ -5,7 +5,6 @@ db = SQLAlchemy()
 
 
 class BlackList(db.Model):
-
     __tablename__ = 'blacklist'
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email: str = db.Column(db.String(150))
