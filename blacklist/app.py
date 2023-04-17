@@ -1,50 +1,57 @@
 import os
 from flask import Flask
+from models import db
 from flask_cors import CORS
-from blacklist import blacklist
-from blacklist.models import db
+from flask import request
 from flask_jwt_extended import JWTManager
+from flask_jwt_extended import jwt_required
+from core import adicionar_email, search_email, generate_token
 
-ACTIVATE_ENDPOINTS = [blacklist]
+application = Flask(__name__)
 
+username = os.getenv('DB_USER', '')
+password = os.getenv('DB_PASSWORD', '')
+dbname = os.getenv('DB_NAME', '')
+hostname = os.getenv('DB_HOST', '')
+# url_posgres = f'postgresql://{username}:{password}@{hostname}:5432/{dbname}'
+url_posgres = os.getenv('DATABASE_URL', 'postgresql://postgres_admin:K38xBUh8&Xfg@moria-devops.c7qi4hgepkrl.us-east-1.rds.amazonaws.com:5432/moria_blacklists')
 
-app = Flask(__name__)
-app.secret_key = 'dev'
+application.config['SQLALCHEMY_DATABASE_URI'] = url_posgres
+application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+application.config['JWT_SECRET_KEY'] = 'frase-secreta'
+application.config['PROPAGATE_EXCEPTIONS'] = True
 
-app.url_map.strict_slashes = False
+jwt = JWTManager(application)
 
-""" username = os.getenv('DB_USER', 'admin')
-password = os.getenv('DB_PASSWORD', 'admin')
-dbname = os.getenv('DB_NAME', 'usuarios_db')
-hostname = os.getenv('DB_HOST', 'db_usuarios')
-url_posgres = os.getenv('DATABASE_URL', 'postgresql://admin:admin@db_ofertas:5432/ofertas_db')
- """
+db.init_app(application)
 
-
-""" if os.getenv('TEST_APP', False) == 'True':
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = url_posgres """
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'frase-secreta'
-app.config['PROPAGATE_EXCEPTIONS'] = True
-
-jwt = JWTManager(app)
-
-db.init_app(app)
-
-with app.app_context():
+with application.app_context():
     db.create_all()
 
-app_context = app.app_context()
+app_context = application.app_context()
 app_context.push()
-cors = CORS(app)
+cors = CORS(application)
 
 
-for blueprint in ACTIVATE_ENDPOINTS:
-    app.register_blueprint(blueprint=blueprint)
+@application.route("/blacklists", methods=['POST'])
+@jwt_required()
+def agregar_email():
+    response, status = adicionar_email(request)
+    return response, status
 
+@application.route('/blacklists/<email>', methods=['GET'] )
+@jwt_required()
+def get_email(email):
+    response, status = search_email(email)
+    return response, status
+
+@application.route('/blacklists/token', methods=['GET'] )
+def token():
+    response, status = generate_token()
+    return response, status
+
+@application.route('/blacklists/ping', methods=['GET'] )
+def root():
+    return 'pong'
 
 
